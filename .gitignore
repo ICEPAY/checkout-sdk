@@ -13,3 +13,6 @@ coverage/
 # Ignore IDE specific files
 .idea/
 .vscode/
+
+# Ignore environment configuration files
+.env
