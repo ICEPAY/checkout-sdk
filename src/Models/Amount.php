@@ -4,6 +4,9 @@ namespace ICEPAY\Checkout\Models;
 
 class Amount
 {
+    const CURRENCY_EUR = 'EUR';
+    const CURRENCY_USD = 'USD';
+    const CURRENCY_GBP = 'GBP';
     public function __construct(public int $value, public ?string $currency)
     {
     }

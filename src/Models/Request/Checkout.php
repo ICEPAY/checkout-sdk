@@ -4,6 +4,7 @@ namespace ICEPAY\Checkout\Models\Request;
 
 use ICEPAY\Checkout\Models\Amount;
 use ICEPAY\Checkout\Models\Metadata;
+use ICEPAY\Checkout\Models\PaymentMethod;
 
 class Checkout
 {
@@ -12,7 +13,8 @@ class Checkout
                                 public ?Amount $amount,
                                 public string $redirectUrl = '',
                                 public string $webhookUrl = '',
-                                public Metadata $metadata)
+                                public PaymentMethod|string $paymentMethod = '',
+                                public Metadata $metadata = new Metadata())
     {
     }
 
@@ -34,7 +36,7 @@ class Checkout
         return $this;
     }
 
-    public function withWebhookUrl(string $webhookUrl)
+    public function withWebhookUrl(string $webhookUrl): self
     {
         $this->webhookUrl = $webhookUrl;
         return $this;
@@ -56,6 +58,8 @@ class Checkout
         return $this;
     }
 
+
+
     public function toArray(): array
     {
         $data = [
@@ -66,6 +70,12 @@ class Checkout
             'webhookUrl'  => $this->webhookUrl,
             'metadata'    => $this->metadata?->toArray(),
         ];
+
+        if($this->paymentMethod instanceof PaymentMethod) {
+            $data['paymentMethod'] = $this->paymentMethod->toArray();
+        } else if (is_string($this->paymentMethod) && $this->paymentMethod !== '') {
+            $data['paymentMethod'] = ['type' => $this->paymentMethod];
+        }
 
         return $data;
     }
