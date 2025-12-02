@@ -16,11 +16,23 @@
     "phpunit/phpunit": "^10.0",
     "squizlabs/php_codesniffer": "^3.7",
     "symfony/http-client": "^8.0",
-    "nyholm/psr7": "^1.8"
+    "nyholm/psr7": "^1.8",
+    "vlucas/phpdotenv": "^5.6"
+  },
+  "suggest": {
+    "symfony/http-client": "For using the Symfony HTTP Client as the HTTP client implementation.",
+    "nyholm/psr7": "For using Nyholm PSR-7 as the PSR-7 implementation.",
+    "guzzlehttp/guzzle": "For using Guzzle as the HTTP client implementation.",
+    "laminas/laminas-diactoros": "For using Laminas Diactoros as the PSR-7 implementation."
   },
   "autoload": {
     "psr-4": {
       "ICEPAY\\Checkout\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "ICEPAY\\Tests\\": "tests/"
     }
   },
   "config": {
