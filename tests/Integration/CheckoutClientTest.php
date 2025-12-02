@@ -30,7 +30,7 @@ class CheckoutClientTest extends TestCase
         $checkoutRequest = new Checkout(
             reference: $reference,
             description: 'Test Checkout',
-            amount: new Amount(1234, 'EUR'),
+            amount: new Amount(1234, Amount::CURRENCY_EUR),
         );
 
         $response = $this->checkoutClient->checkout($checkoutRequest);
