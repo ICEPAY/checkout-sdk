@@ -1,5 +1,5 @@
 {
-  "name": "icepay/php-sdk",
+  "name": "icepay/checkout-sdk",
   "description": "ICEPAY PHP SDK for integrating Checkout API.",
   "type": "library",
   "require": {
