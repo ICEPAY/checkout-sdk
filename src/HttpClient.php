@@ -62,6 +62,20 @@ class HttpClient
         return $this->send($request);
     }
 
+    public function get(string $string, array $headers = []): ResponseInterface
+    {
+        $request = $this->requestFactory->createRequest('GET', $string);
+
+        $mergedHeaders = array_merge($this->defaultHeaders, $headers);
+        foreach ($mergedHeaders as $name => $value) {
+            if ($value !== null) {
+                $request = $request->withHeader($name, $value);
+            }
+        }
+
+        return $this->send($request);
+    }
+
     /**
      * Generic send wrapper.
      */
