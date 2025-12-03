@@ -14,7 +14,8 @@ class Checkout
                                 public string $redirectUrl = '',
                                 public string $webhookUrl = '',
                                 public PaymentMethod|string $paymentMethod = '',
-                                public Metadata $metadata = new Metadata())
+                                public Metadata $metadata = new Metadata(),
+                                public ?int $expireAfter = null)
     {
     }
 
@@ -75,6 +76,9 @@ class Checkout
             $data['paymentMethod'] = $this->paymentMethod->toArray();
         } else if (is_string($this->paymentMethod) && $this->paymentMethod !== '') {
             $data['paymentMethod'] = ['type' => $this->paymentMethod];
+        }
+        if ($this->expireAfter !== null) {
+            $data['expireAfter'] = $this->expireAfter;
         }
 
         return $data;
