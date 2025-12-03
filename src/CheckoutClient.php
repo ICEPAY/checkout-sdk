@@ -61,4 +61,16 @@ class CheckoutClient
         return $checkoutResponse;
     }
 
+    // GET: https://checkout.icepay.com/api/payments/methods
+    public function getPaymentMethods(): array
+    {
+        $response = $this->httpClient->get(self::BASE_URL . 'api/payments/methods');
+        if($response->getStatusCode() >= 200 && $response->getStatusCode() < 300) {
+            throw new \Exception("Get payment methods failed with status code: " . $response->getStatusCode());
+        }
+        $json = $response->getBody()->__toString();
+        $methods = json_decode($json, true);
+        return $methods;
+    }
+
 }
