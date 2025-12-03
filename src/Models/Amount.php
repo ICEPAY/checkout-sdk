@@ -4,9 +4,14 @@ namespace ICEPAY\Checkout\Models;
 
 class Amount
 {
-    const CURRENCY_EUR = 'EUR';
-    const CURRENCY_USD = 'USD';
-    const CURRENCY_GBP = 'GBP';
+    const CURRENCY_EUR = 'eur';
+    const CURRENCY_GBP = 'gbp';
+    const CURRENCY_USD = 'usd';
+    const CURRENCY_PLN = 'pln';
+    const CURRENCY_SEK = 'sek';
+    const CURRENCY_NOK = 'nok';
+    const CURRENCY_DKK = 'dkk';
+    const CURRENCY_CZK = 'czk';
     public function __construct(public int $value, public ?string $currency)
     {
     }
@@ -30,7 +35,7 @@ class Amount
         ];
 
         if ($this->currency !== null) {
-            $data['currency'] = $this->currency;
+            $data['currency'] = strtolower($this->currency);
         }
 
         return $data;
