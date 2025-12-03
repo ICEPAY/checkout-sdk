@@ -9,7 +9,6 @@
     "psr/http-client-implementation": "^1.0",
     "psr/http-factory-implementation": "^1.0",
     "psr/http-message-implementation": "^1.0",
-    "jetcod/data-transport": "^1.4",
     "psr/http-client": "^1.0"
   },
   "require-dev": {
