@@ -33,6 +33,13 @@ abstract class JsonDeserializable
                 $result->$key = new \DateTime($value);
                 continue;
             }
+            if ($propertyType && enum_exists($propertyType->getName())) {
+                $enumClass = $propertyType->getName();
+                if (method_exists($enumClass, 'fromString')) {
+                    $result->$key = $enumClass::fromString($value);
+                    continue;
+                }
+            }
             $result->$key = $value;
         }
         return $result;

@@ -2,7 +2,7 @@
 
 namespace ICEPAY\Checkout\Models;
 
-class Amount implements \JsonSerializable
+class Amount extends JsonDeserializable implements \JsonSerializable
 {
     const CURRENCY_EUR = 'eur';
     const CURRENCY_GBP = 'gbp';
@@ -12,7 +12,7 @@ class Amount implements \JsonSerializable
     const CURRENCY_NOK = 'nok';
     const CURRENCY_DKK = 'dkk';
     const CURRENCY_CZK = 'czk';
-    public function __construct(public int $value, public ?string $currency)
+    public function __construct(public ?int $value = null, public ?string $currency = null)
     {
     }
 

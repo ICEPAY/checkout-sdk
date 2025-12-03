@@ -45,7 +45,7 @@ class HttpClient
     /**
      * Send a POST request with a JSON payload.
      */
-    public function post(string $url, array $payload, array $headers = []): ResponseInterface
+    public function post(string $url, mixed $payload, array $headers = []): ResponseInterface
     {
         $json = $this->encodeJson($payload);
         $body = $this->streamFactory->createStream($json);
@@ -100,7 +100,7 @@ class HttpClient
         }
     }
 
-    protected function encodeJson(array $payload): string
+    protected function encodeJson(mixed $payload): string
     {
         try {
             return json_encode($payload, JSON_THROW_ON_ERROR);

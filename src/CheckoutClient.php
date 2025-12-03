@@ -6,6 +6,7 @@ use ICEPAY\Checkout\Models\Request\Checkout as CheckoutRequest;
 use ICEPAY\Checkout\Models\Response\Checkout as CheckoutResponse;
 use ICEPAY\Checkout\Models\Request\Refund as RefundRequest;
 use ICEPAY\Checkout\Models\Response\Refund as RefundResponse;
+use Psr\Http\Message\ResponseInterface;
 
 class CheckoutClient
 {
@@ -28,12 +29,10 @@ class CheckoutClient
     // POST: https://checkout.icepay.com/api/payments
     public function checkout(CheckoutRequest $checkout): CheckoutResponse
     {
-        $response = $this->httpClient->post(self::BASE_URL . 'api/payments', $checkout->toArray());
-        if($response->getStatusCode() >= 200 && $response->getStatusCode() < 300) {
-            throw new \Exception("Checkout creation failed with status code: " . $response->getStatusCode());
-        }
+        $response = $this->httpClient->post(self::BASE_URL . 'api/payments', $checkout);
+        $this->checkStatusCode($response);
         $json = $response->getBody()->__toString();
-        $checkoutResponse = CheckoutResponse::fromResponse(json_decode($json, true));
+        $checkoutResponse = CheckoutResponse::fromResponse($json);
         return $checkoutResponse;
     }
 
@@ -73,4 +72,12 @@ class CheckoutClient
         return $methods;
     }
 
+    protected function checkStatusCode(ResponseInterface $response): bool
+    {
+        $statusCode = $response->getStatusCode();
+        if($statusCode >= 200 && $statusCode < 300) {
+            return true;
+        }
+        throw new \Exception("Request failed with status code: " . $statusCode);
+    }
 }
