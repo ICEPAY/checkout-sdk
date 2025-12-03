@@ -2,7 +2,9 @@
 
 namespace ICEPAY\Checkout\Models;
 
-enum Status
+use JsonSerializable;
+
+enum Status implements JsonSerializable
 {
     case started;
     case completed;
@@ -31,5 +33,10 @@ enum Status
             'cancelled' => Status::cancelled,
             default => throw new \InvalidArgumentException("Invalid status: $status"),
         };
+    }
+
+    public function jsonSerialize(): mixed
+    {
+        return $this->toString();
     }
 }

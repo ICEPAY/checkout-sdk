@@ -2,7 +2,7 @@
 
 namespace ICEPAY\Checkout\Models;
 
-class Amount
+class Amount implements \JsonSerializable
 {
     const CURRENCY_EUR = 'eur';
     const CURRENCY_GBP = 'gbp';
@@ -28,7 +28,7 @@ class Amount
         return $this;
     }
 
-    public function toArray()
+    public function jsonSerialize(): mixed
     {
         $data = [
             'value' => $this->value,

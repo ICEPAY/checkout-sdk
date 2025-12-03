@@ -6,7 +6,7 @@ use ICEPAY\Checkout\Models\Amount;
 use ICEPAY\Checkout\Models\Metadata;
 use ICEPAY\Checkout\Models\PaymentMethod;
 
-class Checkout
+class Checkout implements \JsonSerializable
 {
     public function __construct(public string $reference = '',
                                 public string $description = '',
@@ -61,19 +61,19 @@ class Checkout
 
 
 
-    public function toArray(): array
+    public function jsonSerialize(): mixed
     {
         $data = [
             'reference'   => $this->reference,
             'description' => $this->description,
-            'amount'      => $this->amount?->toArray(),
+            'amount'      => $this->amount?->jsonSerialize(),
             'redirectUrl' => $this->redirectUrl,
             'webhookUrl'  => $this->webhookUrl,
             'metadata'    => $this->metadata?->toArray(),
         ];
 
         if($this->paymentMethod instanceof PaymentMethod) {
-            $data['paymentMethod'] = $this->paymentMethod->toArray();
+            $data['paymentMethod'] = $this->paymentMethod->jsonSerialize();
         } else if (is_string($this->paymentMethod) && $this->paymentMethod !== '') {
             $data['paymentMethod'] = ['type' => $this->paymentMethod];
         }

@@ -2,7 +2,7 @@
 
 namespace ICEPAY\Checkout\Models\Forward;
 
-class Recipient
+class Recipient implements \JsonSerializable
 {
     public function __construct(public string $id)
     {
@@ -12,7 +12,8 @@ class Recipient
         $this->id = $id;
         return $this;
     }
-    public function toArray(): array
+
+    public function jsonSerialize(): mixed
     {
         return [
             'id' => $this->id,
