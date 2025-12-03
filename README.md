@@ -24,7 +24,7 @@ use ICEPAY\Checkout\CheckoutClient;
 use ICEPAY\Checkout\Models\Amount;
 use ICEPAY\Checkout\Models\Request\Checkout;
 
-$checkoutClient = new (new CheckoutClient())->withAuthorization(merchantId: 'your_merchant_id', merchantSecret: 'your_merchant_secret');
+$checkoutClient = (new CheckoutClient())->withAuthorization(merchantId: 'your_merchant_id', merchantSecret: 'your_merchant_secret');
 //$response = $checkoutClient->createPaymentIntent(amount: 1000, currency: 'EUR');
 $reference = '#' . time();
 $checkoutRequest = new Checkout(
