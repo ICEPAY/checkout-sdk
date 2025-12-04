@@ -45,37 +45,31 @@ class CheckoutClient
     // POST https://checkout.icepay.com/api/payments/{id}/refund
     public function refund(RefundRequest $refund, string $checkoutId) : RefundResponse
     {
-        $response = $this->httpClient->post(self::BASE_URL . 'api/payments/' . $checkoutId . '/refund', $refund);
-        $this->checkStatusCode($response);
-        $json = $response->getBody()->__toString();
-        $refundResponse = RefundResponse::fromResponse($json);
-        return $refundResponse;
+        /** @var RefundResponse $result */
+        $result = $this->httpClient->post(self::BASE_URL . 'api/payments/' . $checkoutId . '/refund', $refund);
+        return $result;
     }
 
     // GET: https://checkout.icepay.com/api/payments/{key}
     public function getCheckout(string $checkoutId): CheckoutResponse
     {
-        $response = $this->httpClient->get(self::BASE_URL . 'api/payments/' . $checkoutId);
-        $this->checkStatusCode($response);
-        $json = $response->getBody()->__toString();
-        $checkoutResponse = CheckoutResponse::fromResponse($json);
-        return $checkoutResponse;
+        /** @var CheckoutResponse $result */
+        $result = $this->httpClient->get(self::BASE_URL . 'api/payments/' . $checkoutId);
+        return $result;
     }
 
     // GET: https://checkout.icepay.com/api/payments/methods
     public function getPaymentMethods(): array
     {
         $response = $this->httpClient->get(self::BASE_URL . 'api/payments/methods');
-        if($response->getStatusCode() >= 200 && $response->getStatusCode() < 300) {
-            throw new \Exception("Get payment methods failed with status code: " . $response->getStatusCode());
-        }
+        $this->checkStatusCode($response);
         $json = $response->getBody()->__toString();
         $methods = json_decode($json, true);
         return $methods;
     }
     protected function callCheckoutApi($url, string $className, ?\JsonSerializable $payload = null): JsonDeserializable
     {
-        if (is_subclass_of($className, JsonDeserializable::class)){
+        if (!is_subclass_of($className, JsonDeserializable::class)){
             throw new \Exception("Class $className is not a subclass of JsonDeserializable");
         }
         if($payload !== null) {
