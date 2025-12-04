@@ -28,7 +28,7 @@ class CheckoutClient
     }
 
     // POST: https://checkout.icepay.com/api/payments
-    public function checkout(CheckoutRequest $checkout): CheckoutResponse
+    public function createCheckout(CheckoutRequest $checkout): CheckoutResponse
     {
         /** @var CheckoutResponse $result */
         $result = $this->callCheckoutApi(self::BASE_URL . 'api/payments', CheckoutResponse::class, $checkout);
