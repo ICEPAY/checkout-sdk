@@ -2,26 +2,21 @@
 
 namespace ICEPAY\Checkout\Models;
 
-class Recipient
+class Recipient implements \JsonSerializable
 {
-    public function __construct(public int $id)
+    public function __construct(public string $id)
     {
     }
-    public function withId(int $id): self
+    public function withId(string $id) : self
     {
         $this->id = $id;
         return $this;
     }
 
-    public function toArray(): array
+    public function jsonSerialize(): mixed
     {
         return [
             'id' => $this->id,
         ];
-    }
-
-    public static function fromArray(mixed $recipient)
-    {
-        return new self($recipient['id']);
     }
 }

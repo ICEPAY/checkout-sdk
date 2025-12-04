@@ -3,7 +3,6 @@
 namespace ICEPAY\Checkout\Models\Request;
 
 use ICEPAY\Checkout\Models\Amount;
-use ICEPAY\Checkout\Models\Forward\Recipient;
 
 class Forward
 {
