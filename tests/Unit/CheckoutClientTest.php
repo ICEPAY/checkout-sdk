@@ -13,29 +13,29 @@ use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\ResponseInterface;
 
-class EchoClient implements ClientInterface
-{
-    public function sendRequest(RequestInterface $request): ResponseInterface
-    {
-        if($request->getUri()->getPath() === '/api/payments') {
-            $data = json_decode((string)$request->getBody(), true);
-            $data['key'] = 'pi-' . bin2hex(random_bytes(8));
-            $data['status'] = Status::pending->toString();
-            $body = json_encode($data);
-            return new Response(200, ['Content-Type' => 'application/json'], $body);
-        }
 
-        return new Response(200, ['Content-Type' => 'application/json'], (string)$request->getBody());
-    }
-}
 class CheckoutClientTest extends TestCase
 {
+
+
     public function testCheckoutCreation()
     {
-        $httpClient = new HttpClient(client: new EchoClient());
-        $checkoutClient = (new CheckoutClient())->withHttpClient($httpClient);
-
         $reference = '#' . time();
+
+        $responseBody = [
+            'key' => 'pi-124567890abcdef',
+            'status' => Status::pending->toString(),
+            'amount' => [
+                'value' => 1234,
+                'currency' => Amount::CURRENCY_EUR,
+            ],
+            'reference' => $reference,
+            'description' => 'Test Checkout',
+        ];
+        $response = new Response(200, ['Content-Type' => 'application/json'], json_encode($responseBody));
+        $checkoutClient = $this->getFixedResponseClient($response);
+
+
         $checkoutRequest = new Checkout(
             reference: $reference,
             description: 'Test Checkout',
@@ -44,5 +44,36 @@ class CheckoutClientTest extends TestCase
 
         $response = $checkoutClient->createCheckout($checkoutRequest);
         $this->assertEquals($response->reference, $reference);
+    }
+
+    public function testGetPaymentMethods()
+    {
+        $methods = [
+            ['id' => 'card', 'description' => 'Card'],
+            ['id' => 'paypal', 'description' => 'PayPal'],
+        ];
+        $response = new Response(200, ['Content-Type' => 'application/json'], json_encode($methods));
+        $checkoutClient = $this->getFixedResponseClient($response);
+
+        $result = $checkoutClient->getPaymentMethods();
+        $this->assertIsArray($result);
+        $this->assertCount(2, $result);
+        $this->assertEquals('card', $result[0]['id']);
+        $this->assertEquals('paypal', $result[1]['id']);
+    }
+
+    protected function getFixedResponseClient(Response $response): CheckoutClient
+    {
+        $httpClient = (new class implements ClientInterface {
+            public function __construct(protected Response $response)
+            {
+            }
+            public function sendRequest(RequestInterface $request): ResponseInterface
+            {
+                return $this->response;
+            }
+        })($response);
+
+        return (new CheckoutClient())->withHttpClient(new HttpClient(client: $httpClient));
     }
 }
