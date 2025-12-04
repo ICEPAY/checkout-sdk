@@ -9,9 +9,4 @@ class Refund extends JsonDeserializable
     public Amount $amount;
     public string $reference;
     public string $description;
-
-    public function toArray(): array
-    {
-        // TODO: Implement toArray() method.
-    }
 }
