@@ -1,0 +1,23 @@
+# Ignore vendor files
+/vendor/
+
+# Ignore composer lock files
+composer.lock
+
+# Ignore cache files
+*.cache
+
+# Ignore test coverage report
+coverage/
+
+# Ignore IDE specific files
+.idea/
+.vscode/
+
+# Ignore environment configuration files
+.env
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
