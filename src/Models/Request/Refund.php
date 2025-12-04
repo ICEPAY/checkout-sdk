@@ -4,7 +4,7 @@ namespace ICEPAY\Checkout\Models\Request;
 
 use ICEPAY\Checkout\Models\Amount;
 
-class Refund
+class Refund implements \JsonSerializable
 {
     public function __construct(public $reference, public Amount|int $amount, public ?string $description)
     {
@@ -28,14 +28,14 @@ class Refund
         return $this;
     }
 
-    public function toArray(): array
+    public function jsonSerialize(): mixed
     {
         $data = [
             'reference' => $this->reference,
         ];
 
         if ($this->amount instanceof Amount) {
-            $data['amount'] = $this->amount->toArray();
+            $data['amount'] = $this->amount->jsonSerialize();
         } else {
             $data['amount'] = ['value' => $this->amount];
         }

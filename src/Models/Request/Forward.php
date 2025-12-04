@@ -3,8 +3,9 @@
 namespace ICEPAY\Checkout\Models\Request;
 
 use ICEPAY\Checkout\Models\Amount;
+use ICEPAY\Checkout\Models\Recipient;
 
-class Forward
+class Forward implements \JsonSerializable
 {
     public function __construct(public $reference, public Amount|int $amount, public Recipient|string $recipient, public ?string $description)
     {
@@ -34,20 +35,20 @@ class Forward
         return $this;
     }
 
-    public function toArray(): array
+    public function jsonSerialize(): mixed
     {
         $data = [
             'reference' => $this->reference,
         ];
 
         if ($this->amount instanceof Amount) {
-            $data['amount'] = $this->amount->toArray();
+            $data['amount'] = $this->amount->jsonSerialize();
         } else {
             $data['amount'] = ['value' => $this->amount];
         }
 
         if ($this->recipient instanceof Recipient) {
-            $data['recipient'] = $this->recipient->toArray();
+            $data['recipient'] = $this->recipient->jsonSerialize();
         } else {
             $data['recipient'] = ['id' => $this->recipient];
         }
