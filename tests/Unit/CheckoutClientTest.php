@@ -16,8 +16,6 @@ use Psr\Http\Message\ResponseInterface;
 
 class CheckoutClientTest extends TestCase
 {
-
-
     public function testCheckoutCreation()
     {
         $reference = '#' . time();
