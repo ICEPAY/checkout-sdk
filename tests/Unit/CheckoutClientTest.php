@@ -64,7 +64,7 @@ class CheckoutClientTest extends TestCase
 
     protected function getFixedResponseClient(Response $response): CheckoutClient
     {
-        $httpClient = (new class implements ClientInterface {
+        $httpClient = new class($response) implements ClientInterface {
             public function __construct(protected Response $response)
             {
             }
@@ -72,7 +72,7 @@ class CheckoutClientTest extends TestCase
             {
                 return $this->response;
             }
-        })($response);
+        };
 
         return (new CheckoutClient())->withHttpClient(new HttpClient(client: $httpClient));
     }
