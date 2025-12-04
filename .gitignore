@@ -16,3 +16,8 @@ coverage/
 
 # Ignore environment configuration files
 .env
+
+# Ignore system files
+.DS_Store
+Thumbs.db
+
