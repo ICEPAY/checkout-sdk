@@ -33,7 +33,7 @@ class CheckoutClientTest extends TestCase
             amount: new Amount(1234, Amount::CURRENCY_EUR),
         );
 
-        $response = $this->checkoutClient->checkout($checkoutRequest);
+        $response = $this->checkoutClient->createCheckout($checkoutRequest);
         $this->assertEquals($response->reference, $reference);
     }
 }

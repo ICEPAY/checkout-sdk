@@ -2,7 +2,7 @@
 
 namespace ICEPAY\Checkout\Models;
 
-class PaymentMethod
+class PaymentMethod implements \JsonSerializable
 {
     const TYPE_BANCONTACT = 'bancontact';
     const TYPE_IDEAL = 'ideal';
@@ -28,7 +28,8 @@ class PaymentMethod
     {
         return new self($data['type'], $data['issuer'] ?? null);
     }
-    public function toArray(): array
+
+    public function jsonSerialize(): mixed
     {
         $result = [
             'type' => $this->type,
