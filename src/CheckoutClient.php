@@ -33,13 +33,6 @@ class CheckoutClient
         /** @var CheckoutResponse $result */
         $result = $this->callCheckoutApi(self::BASE_URL . 'api/payments', CheckoutResponse::class, $checkout);
         return $result;
-
-
-//        $response = $this->httpClient->post(self::BASE_URL . 'api/payments', $checkout);
-//        $this->checkStatusCode($response);
-//        $json = $response->getBody()->__toString();
-//        $checkoutResponse = CheckoutResponse::fromResponse($json);
-//        return $checkoutResponse;
     }
 
     // POST https://checkout.icepay.com/api/payments/{id}/refund
