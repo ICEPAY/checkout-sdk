@@ -20,13 +20,13 @@ class Checkout extends Payment
         if (isset($data['refunds'])) {
             $result->refunds = [];
             foreach ($data['refunds'] as $refundData) {
-                $result->refunds[] = Refund::fromArray($refundData);
+                $result->refunds[] = \ICEPAY\Checkout\Models\Refund::fromArray($refundData);
             }
         }
         if (isset($data['forwards'])) {
             $result->forwards = [];
             foreach ($data['forwards'] as $forwardData) {
-                $result->forwards[] = Forward::fromArray($forwardData);
+                $result->forwards[] = \ICEPAY\Checkout\Models\Forward::fromArray($forwardData);
             }
         }
 

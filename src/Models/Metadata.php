@@ -2,7 +2,7 @@
 
 namespace ICEPAY\Checkout\Models;
 
-class Metadata
+class Metadata extends JsonDeserializable implements \JsonSerializable
 {
     public function __construct(protected array $data = [])
     {
@@ -23,8 +23,11 @@ class Metadata
         $this->data['customer']['email'] = $email;
         return $this;
     }
-
-    public function toArray(): array
+    public static function fromArray(array $data): static
+    {
+        return new static($data);
+    }
+    public function jsonSerialize(): mixed
     {
         return $this->data;
     }
