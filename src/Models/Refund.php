@@ -4,7 +4,7 @@ namespace ICEPAY\Checkout\Models;
 
 class Refund extends JsonDeserializable
 {
-    public string $id;
+    public string $key;
     public Status $status;
     public Amount $amount;
     public string $reference;

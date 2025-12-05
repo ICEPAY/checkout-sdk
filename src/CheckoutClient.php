@@ -4,8 +4,11 @@ namespace ICEPAY\Checkout;
 
 use ICEPAY\Checkout\Models\JsonDeserializable;
 use ICEPAY\Checkout\Models\Request\Checkout as CheckoutRequest;
+use ICEPAY\Checkout\Models\Request\Forward as ForwardRequest;
 use ICEPAY\Checkout\Models\Request\Refund as RefundRequest;
 use ICEPAY\Checkout\Models\Response\Checkout as CheckoutResponse;
+use ICEPAY\Checkout\Models\Response\Forward as ForwardResponse;
+use ICEPAY\Checkout\Models\Response\PaymentMethod;
 use ICEPAY\Checkout\Models\Response\Refund as RefundResponse;
 use Psr\Http\Message\ResponseInterface;
 
@@ -41,7 +44,15 @@ class CheckoutClient
     public function refund(RefundRequest $refund, string $checkoutId): RefundResponse
     {
         /** @var RefundResponse $result */
-        $result = $this->httpClient->post(self::BASE_URL . 'api/payments/' . $checkoutId . '/refund', $refund);
+        $result = $this->callCheckoutApi(self::BASE_URL . 'api/payments/' . $checkoutId . '/refund', RefundResponse::class, $refund);
+        return $result;
+    }
+
+    // POST https://checkout.icepay.com/api/payments/{id}/forward
+    public function forward(ForwardRequest $forward, string $checkoutId): ForwardResponse
+    {
+        /** @var ForwardResponse $result */
+        $result = $this->callCheckoutApi(self::BASE_URL . 'api/payments/' . $checkoutId . '/forward', ForwardResponse::class, $forward);
         return $result;
     }
 
@@ -49,7 +60,7 @@ class CheckoutClient
     public function getCheckout(string $checkoutId): CheckoutResponse
     {
         /** @var CheckoutResponse $result */
-        $result = $this->httpClient->get(self::BASE_URL . 'api/payments/' . $checkoutId);
+        $result = $this->callCheckoutApi(self::BASE_URL . 'api/payments/' . $checkoutId, CheckoutResponse::class);
         return $result;
     }
 
@@ -59,8 +70,10 @@ class CheckoutClient
         $response = $this->httpClient->get(self::BASE_URL . 'api/payments/methods');
         $this->checkStatusCode($response);
         $json = $response->getBody()->__toString();
-        $methods = json_decode($json, true);
-        return $methods;
+
+        return array_map(static function (array $methodData): PaymentMethod {
+            return PaymentMethod::fromArray($methodData);
+        }, json_decode($json, true));
     }
 
     protected function callCheckoutApi($url, string $className, ?\JsonSerializable $payload = null): JsonDeserializable
