@@ -18,37 +18,31 @@ class Checkout implements \JsonSerializable
                                 public ?int                 $expireAfter = null)
     {
     }
-
     public function withReference(string $reference): self
     {
         $this->reference = $reference;
         return $this;
     }
-
     public function withDescription(string $description): self
     {
         $this->description = $description;
         return $this;
     }
-
     public function withRedirectUrl(string $redirectUrl): self
     {
         $this->redirectUrl = $redirectUrl;
         return $this;
     }
-
     public function withWebhookUrl(string $webhookUrl): self
     {
         $this->webhookUrl = $webhookUrl;
         return $this;
     }
-
     public function withCustomer(array $customer): self
     {
         $this->metadata->withCustomer($customer);
         return $this;
     }
-
     public function withCustomerEmail(string $email): self
     {
         if (!isset($this->metadata)) {
@@ -58,8 +52,15 @@ class Checkout implements \JsonSerializable
         $this->metadata->withCustomerEmail($email);
         return $this;
     }
+    public function withIntegrationInformation(string $type, string $version, string $developer): self
+    {
+        if (!isset($this->metadata)) {
+            $this->metadata = new Metadata();
+        }
 
-
+        $this->metadata->withIntegrationInformation($type, $version, $developer);
+        return $this;
+    }
     public function jsonSerialize(): mixed
     {
         $data = [
@@ -68,7 +69,7 @@ class Checkout implements \JsonSerializable
             'amount' => $this->amount?->jsonSerialize(),
             'redirectUrl' => $this->redirectUrl,
             'webhookUrl' => $this->webhookUrl,
-            'metadata' => $this->metadata?->toArray(),
+            'metadata' => $this->metadata?->jsonSerialize(),
         ];
 
         if ($this->paymentMethod instanceof PaymentMethod) {
