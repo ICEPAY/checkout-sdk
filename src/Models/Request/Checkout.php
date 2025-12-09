@@ -68,7 +68,7 @@ class Checkout implements \JsonSerializable
             'amount' => $this->amount?->jsonSerialize(),
             'redirectUrl' => $this->redirectUrl,
             'webhookUrl' => $this->webhookUrl,
-            'metadata' => $this->metadata?->toArray(),
+            'metadata' => $this->metadata?->jsonSerialize(),
         ];
 
         if ($this->paymentMethod instanceof PaymentMethod) {

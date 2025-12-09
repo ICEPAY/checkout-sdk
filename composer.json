@@ -38,5 +38,8 @@
     "allow-plugins": {
       "php-http/discovery": true
     }
+  },
+  "scripts": {
+    "phpunit": "@php ./vendor/phpunit/phpunit/phpunit"
   }
 }

@@ -17,6 +17,10 @@ class CheckoutClientTest extends TestCase
     {
         parent::setUp();
 
+        if (empty($_ENV['MERCHANT_ID']) || empty($_ENV['MERCHANT_SECRET'])) {
+            $this->markTestSkipped('MERCHANT_ID or MERCHANT_SECRET not set in environment.');
+        }
+
         $this->checkoutClient = (new CheckoutClient())->withAuthorization(
             merchantId: $_ENV['MERCHANT_ID'],
             merchantSecret: $_ENV['MERCHANT_SECRET'],
