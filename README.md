@@ -79,6 +79,29 @@ $checkoutClient = (new CheckoutClient())
     ->withAuthorization(merchantId: 'your_merchant_id', merchantSecret: 'your_merchant_secret');
 ```
 
+## Handling Postback Requests
+
+After a payment status changes, ICEPAY sends a postback request to the provided webhookUrl. You can handle this request and verify its authenticity using the following example:
+
+```php
+use ICEPAY\Checkout\Models\Response\Checkout;
+use Psr\Http\Message\MessageInterface;
+
+function postbackHandler(MessageInterface $request): void {
+    $providedSignature = $request->getHeader('ICEPAY-Signature');
+    $body = $request->getBody()->getContents();
+    $secretKey = 'your_merchant_secret_key'; // Replace with your actual secret key
+    $calculatedSignature = base64_encode(hash_hmac('sha256', $body, $secretKey, true));
+    if (!hash_equals($providedSignature[0], $calculatedSignature)) {
+        // Invalid signature, reject the request
+        http_response_code(400);
+    }
+
+    $payment = Checkout::fromResponse($body);
+    // Process the updated payment data as needed
+}
+```
+
 
 # Development
 
