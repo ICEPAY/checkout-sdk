@@ -105,14 +105,26 @@ function postbackHandler(MessageInterface $request): void {
 
 # Development
 
-## Importing the Package Locally
-
-```shell
-composer install
-```
-
 ## Running PHPUnit
 
 ```shell
 composer phpunit
+```
+
+## Quick code example to get payment methods
+
+To quickly test the code example to get payment methods, you can use the following script. Make sure to set your `MERCHANT_ID` and `MERCHANT_SECRET` in a `.env` file in the same directory.
+
+```php
+use Dotenv\Dotenv;
+use ICEPAY\Checkout\CheckoutClient;
+
+require_once "vendor/autoload.php";
+
+$dotenv = Dotenv::createImmutable(__DIR__);
+$dotenv->safeLoad();
+$checkoutClient = (new CheckoutClient())->withAuthorization(merchantId:  $_ENV['MERCHANT_ID'], merchantSecret: $_ENV['MERCHANT_SECRET']);
+
+$paymentMethods = $checkoutClient->getPaymentMethods();
+var_dump($paymentMethods[0]->id);
 ```

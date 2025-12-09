@@ -56,8 +56,8 @@ class CheckoutClientTest extends TestCase
         $result = $checkoutClient->getPaymentMethods();
         $this->assertIsArray($result);
         $this->assertCount(2, $result);
-        $this->assertEquals('card', $result[0]['id']);
-        $this->assertEquals('paypal', $result[1]['id']);
+        $this->assertEquals('card', $result[0]->id);
+        $this->assertEquals('paypal', $result[1]->id);
     }
 
     protected function getFixedResponseClient(Response $response): CheckoutClient
