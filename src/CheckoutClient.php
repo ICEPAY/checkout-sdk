@@ -10,6 +10,7 @@ use ICEPAY\Checkout\Models\Response\Checkout as CheckoutResponse;
 use ICEPAY\Checkout\Models\Response\Forward as ForwardResponse;
 use ICEPAY\Checkout\Models\Response\PaymentMethod;
 use ICEPAY\Checkout\Models\Response\Refund as RefundResponse;
+use JsonSerializable;
 use Psr\Http\Message\ResponseInterface;
 
 class CheckoutClient
@@ -35,33 +36,25 @@ class CheckoutClient
     // POST: https://checkout.icepay.com/api/payments
     public function createCheckout(CheckoutRequest $checkout): CheckoutResponse
     {
-        /** @var CheckoutResponse $result */
-        $result = $this->callCheckoutApi(self::BASE_URL . 'api/payments', CheckoutResponse::class, $checkout);
-        return $result;
+        return $this->callCheckoutApi(self::BASE_URL . 'api/payments', CheckoutResponse::class, $checkout);
     }
 
     // POST https://checkout.icepay.com/api/payments/{id}/refund
     public function refund(RefundRequest $refund, string $checkoutId): RefundResponse
     {
-        /** @var RefundResponse $result */
-        $result = $this->callCheckoutApi(self::BASE_URL . 'api/payments/' . $checkoutId . '/refund', RefundResponse::class, $refund);
-        return $result;
+        return $this->callCheckoutApi(self::BASE_URL . 'api/payments/' . $checkoutId . '/refund', RefundResponse::class, $refund);
     }
 
     // POST https://checkout.icepay.com/api/payments/{id}/forward
     public function forward(ForwardRequest $forward, string $checkoutId): ForwardResponse
     {
-        /** @var ForwardResponse $result */
-        $result = $this->callCheckoutApi(self::BASE_URL . 'api/payments/' . $checkoutId . '/forward', ForwardResponse::class, $forward);
-        return $result;
+        return $this->callCheckoutApi(self::BASE_URL . 'api/payments/' . $checkoutId . '/forward', ForwardResponse::class, $forward);
     }
 
     // GET: https://checkout.icepay.com/api/payments/{key}
     public function getCheckout(string $checkoutId): CheckoutResponse
     {
-        /** @var CheckoutResponse $result */
-        $result = $this->callCheckoutApi(self::BASE_URL . 'api/payments/' . $checkoutId, CheckoutResponse::class);
-        return $result;
+        return $this->callCheckoutApi(self::BASE_URL . 'api/payments/' . $checkoutId, CheckoutResponse::class);
     }
 
     // GET: https://checkout.icepay.com/api/payments/methods
@@ -76,7 +69,14 @@ class CheckoutClient
         }, json_decode($json, true));
     }
 
-    protected function callCheckoutApi($url, string $className, ?\JsonSerializable $payload = null): JsonDeserializable
+    /**
+     * @template ResponseType of JsonDeserializable
+     * @param string $url
+     * @param class-string<ResponseType> $className
+     * @param JsonSerializable|null $payload
+     * @return ResponseType
+     * @throws \Exception
+     */protected function callCheckoutApi($url, string $className, ?JsonSerializable $payload = null): JsonDeserializable
     {
         if (!is_subclass_of($className, JsonDeserializable::class)) {
             throw new \Exception("Class $className is not a subclass of JsonDeserializable");
