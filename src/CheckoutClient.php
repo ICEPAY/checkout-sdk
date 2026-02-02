@@ -76,7 +76,8 @@ class CheckoutClient
      * @param JsonSerializable|null $payload
      * @return ResponseType
      * @throws \Exception
-     */protected function callCheckoutApi($url, string $className, ?JsonSerializable $payload = null): JsonDeserializable
+     */
+    protected function callCheckoutApi(string $url, string $className, ?JsonSerializable $payload = null): JsonDeserializable
     {
         if (!is_subclass_of($className, JsonDeserializable::class)) {
             throw new \Exception("Class $className is not a subclass of JsonDeserializable");
