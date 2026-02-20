@@ -76,6 +76,7 @@ class CheckoutClient
      * @param JsonSerializable|null $payload
      * @return ResponseType
      * @throws \Exception
+     * @throws \JsonException
      */
     protected function callCheckoutApi(string $url, string $className, ?JsonSerializable $payload = null): JsonDeserializable
     {
