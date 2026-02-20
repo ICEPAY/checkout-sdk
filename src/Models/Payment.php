@@ -8,6 +8,7 @@ class Payment extends JsonDeserializable
 {
     public string $key;
     public Status $status;
+    public FinancialStatus $financialStatus;
     public Amount $amount;
     public ?PaymentMethod $paymentMethod;
     public string $reference;
