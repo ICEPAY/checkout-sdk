@@ -22,11 +22,11 @@ Here's a simple example of how to use the ICEPAY Checkout SDK:
 require 'vendor/autoload.php';
 use ICEPAY\Checkout\CheckoutClient;
 use ICEPAY\Checkout\Models\Amount;
-use ICEPAY\Checkout\Models\Request\Checkout;
+use ICEPAY\Checkout\Models\Request\Checkout as CreateCheckout;
 
 $checkoutClient = (new CheckoutClient())->withAuthorization(merchantId: 'your_merchant_id', merchantSecret: 'your_merchant_secret');
 $reference = '#' . time();
-$checkoutRequest = new createCheckout(
+$checkoutRequest = new CreateCheckout(
     reference: $reference,
     description: 'Test Checkout',
     amount: new Amount(1234, Amount::CURRENCY_EUR),
