@@ -62,11 +62,10 @@ class CheckoutClient
     {
         $response = $this->httpClient->get(self::BASE_URL . 'api/payments/methods');
         $this->checkStatusCode($response);
-        $json = $response->getBody()->__toString();
 
         return array_map(static function (array $methodData): PaymentMethod {
             return PaymentMethod::fromArray($methodData);
-        }, json_decode($json, true));
+        }, $this->httpClient->decodeJson($response));
     }
 
     /**
