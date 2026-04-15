@@ -7,7 +7,7 @@ use ICEPAY\Checkout\Models\Recipient;
 
 class Forward implements \JsonSerializable
 {
-    public function __construct(public $reference, public Amount|int $amount, public Recipient|string $recipient, public ?string $description)
+    public function __construct(public string $reference, public Amount|int $amount, public Recipient|string $recipient, public ?string $description)
     {
     }
 

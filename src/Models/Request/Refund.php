@@ -6,7 +6,7 @@ use ICEPAY\Checkout\Models\Amount;
 
 class Refund implements \JsonSerializable
 {
-    public function __construct(public $reference, public Amount|int $amount, public ?string $description)
+    public function __construct(public string $reference, public Amount|int $amount, public ?string $description)
     {
     }
 
