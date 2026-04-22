@@ -58,6 +58,7 @@ class CheckoutClient
     }
 
     // GET: https://checkout.icepay.com/api/payments/methods
+    /** @return list<PaymentMethod> */
     public function getPaymentMethods(): array
     {
         $response = $this->httpClient->get(self::BASE_URL . 'api/payments/methods');

@@ -15,6 +15,8 @@ class HttpClient
     protected ClientInterface $client;
     protected RequestFactoryInterface $requestFactory;
     protected StreamFactoryInterface $streamFactory;
+
+    /** @var array<string, string> */
     protected array $defaultHeaders = [
         'Content-Type' => 'application/json',
         'Accept' => 'application/json',
@@ -45,6 +47,8 @@ class HttpClient
 
     /**
      * Send a POST request with a JSON payload.
+     *
+     * @param array<string, string|null> $headers
      */
     public function post(string $url, mixed $payload, array $headers = []): ResponseInterface
     {
@@ -63,6 +67,7 @@ class HttpClient
         return $this->send($request);
     }
 
+    /** @param array<string, string|null> $headers */
     public function get(string $string, array $headers = []): ResponseInterface
     {
         $request = $this->requestFactory->createRequest('GET', $string);
@@ -87,6 +92,8 @@ class HttpClient
 
     /**
      * Decode a JSON response body into an associative array.
+     *
+     * @return array<string, mixed>
      */
     public function decodeJson(ResponseInterface $response): array
     {

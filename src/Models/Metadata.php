@@ -2,11 +2,15 @@
 
 namespace ICEPAY\Checkout\Models;
 
+/** @phpstan-consistent-constructor */
 class Metadata extends JsonDeserializable implements \JsonSerializable
 {
+    /** @param array<string, mixed> $data */
     public function __construct(protected array $data = [])
     {
     }
+
+    /** @param array<string, mixed> $customer */
     public function withCustomer(array $customer): self
     {
         $this->data['customer'] = $customer;
@@ -30,6 +34,7 @@ class Metadata extends JsonDeserializable implements \JsonSerializable
         ]);
         return $this;
     }
+    /** @param array<string, mixed> $data */
     public static function fromArray(array $data): static
     {
         return new static($data);

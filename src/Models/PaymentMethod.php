@@ -2,6 +2,7 @@
 
 namespace ICEPAY\Checkout\Models;
 
+/** @phpstan-consistent-constructor */
 class PaymentMethod extends JsonDeserializable implements \JsonSerializable
 {
     const TYPE_BANCONTACT = 'bancontact';
@@ -37,6 +38,7 @@ class PaymentMethod extends JsonDeserializable implements \JsonSerializable
         return $result;
     }
 
+    /** @param array<string, mixed> $data */
     public static function fromArray(array $data): static
     {
         return new static(
