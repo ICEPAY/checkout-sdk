@@ -22,11 +22,11 @@ Here's a simple example of how to use the ICEPAY Checkout SDK:
 require 'vendor/autoload.php';
 use ICEPAY\Checkout\CheckoutClient;
 use ICEPAY\Checkout\Models\Amount;
-use ICEPAY\Checkout\Models\Request\Checkout;
+use ICEPAY\Checkout\Models\Request\Checkout as CheckoutRequest;
 
 $checkoutClient = (new CheckoutClient())->withAuthorization(merchantId: 'your_merchant_id', merchantSecret: 'your_merchant_secret');
 $reference = '#' . time();
-$checkoutRequest = new createCheckout(
+$checkoutRequest = new CheckoutRequest(
     reference: $reference,
     description: 'Test Checkout',
     amount: new Amount(1234, Amount::CURRENCY_EUR),
@@ -34,6 +34,27 @@ $checkoutRequest = new createCheckout(
 
 $response = $this->checkoutClient->checkout($checkoutRequest);
 print_r($response->links->checkout);
+```
+
+## Providing a payment method
+When the customer selects a payment method in your checkout, you can include it in the CheckoutRequest.  
+```php
+require 'vendor/autoload.php';
+use ICEPAY\Checkout\CheckoutClient;
+use ICEPAY\Checkout\Models\Amount;
+use ICEPAY\Checkout\Models\Request\Checkout as CheckoutRequest;
+
+$checkoutClient = (new CheckoutClient())->withAuthorization(merchantId: 'your_merchant_id', merchantSecret: 'your_merchant_secret');
+$reference = '#' . time();
+$checkoutRequest = new CheckoutRequest(
+    reference: $reference,
+    description: 'Test Checkout',
+    amount: new Amount(1234, Amount::CURRENCY_EUR),
+    paymentMethod: 'card',
+);
+
+$response = $this->checkoutClient->checkout($checkoutRequest);
+print_r($response->links->direct);
 ```
 
 ## Using a custom HTTP Client
