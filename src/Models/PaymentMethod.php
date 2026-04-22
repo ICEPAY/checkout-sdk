@@ -1,16 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ICEPAY\Checkout\Models;
 
+/** @phpstan-consistent-constructor */
 class PaymentMethod extends JsonDeserializable implements \JsonSerializable
 {
-    const TYPE_BANCONTACT = 'bancontact';
-    const TYPE_IDEAL = 'ideal';
-    const TYPE_ONLINEUEBERWEISEN = 'onlineueberweisen';
-    const TYPE_CARD = 'card';
-    const TYPE_PAYPAL = 'paypal';
-    const TYPE_EPS = 'EPS';
-    const TYPE_PAYBYBANK = 'paybybank';
+    public const TYPE_BANCONTACT = 'bancontact';
+    public const TYPE_IDEAL = 'ideal';
+    public const TYPE_ONLINEUEBERWEISEN = 'onlineueberweisen';
+    public const TYPE_CARD = 'card';
+    public const TYPE_PAYPAL = 'paypal';
+    public const TYPE_EPS = 'EPS';
+    public const TYPE_PAYBYBANK = 'paybybank';
 
     public function __construct(public string $type, public ?string $issuer = null)
     {
@@ -37,6 +40,7 @@ class PaymentMethod extends JsonDeserializable implements \JsonSerializable
         return $result;
     }
 
+    /** @param array<string, mixed> $data */
     public static function fromArray(array $data): static
     {
         return new static(

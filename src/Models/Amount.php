@@ -1,17 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ICEPAY\Checkout\Models;
 
 class Amount extends JsonDeserializable implements \JsonSerializable
 {
-    const CURRENCY_EUR = 'eur';
-    const CURRENCY_GBP = 'gbp';
-    const CURRENCY_USD = 'usd';
-    const CURRENCY_PLN = 'pln';
-    const CURRENCY_SEK = 'sek';
-    const CURRENCY_NOK = 'nok';
-    const CURRENCY_DKK = 'dkk';
-    const CURRENCY_CZK = 'czk';
+    public const CURRENCY_EUR = 'eur';
+    public const CURRENCY_GBP = 'gbp';
+    public const CURRENCY_USD = 'usd';
+    public const CURRENCY_PLN = 'pln';
+    public const CURRENCY_SEK = 'sek';
+    public const CURRENCY_NOK = 'nok';
+    public const CURRENCY_DKK = 'dkk';
+    public const CURRENCY_CZK = 'czk';
 
     public function __construct(public ?int $value = null, public ?string $currency = null)
     {

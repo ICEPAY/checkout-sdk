@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ICEPAY\Checkout\Models\Request;
 
 use ICEPAY\Checkout\Models\Amount;
@@ -8,15 +10,16 @@ use ICEPAY\Checkout\Models\PaymentMethod;
 
 class Checkout implements \JsonSerializable
 {
-    public function __construct(public string               $reference = '',
-                                public string               $description = '',
-                                public ?Amount              $amount,
-                                public string               $redirectUrl = '',
-                                public string               $webhookUrl = '',
-                                public PaymentMethod|string $paymentMethod = '',
-                                public Metadata             $metadata = new Metadata(),
-                                public ?int                 $expireAfter = null)
-    {
+    public function __construct(
+        public string $reference = '',
+        public string $description = '',
+        public ?Amount $amount = null,
+        public string $redirectUrl = '',
+        public string $webhookUrl = '',
+        public PaymentMethod|string $paymentMethod = '',
+        public Metadata $metadata = new Metadata(),
+        public ?int $expireAfter = null
+    ) {
     }
     public function withReference(string $reference): self
     {
@@ -38,6 +41,7 @@ class Checkout implements \JsonSerializable
         $this->webhookUrl = $webhookUrl;
         return $this;
     }
+    /** @param array<string, mixed> $customer */
     public function withCustomer(array $customer): self
     {
         $this->metadata->withCustomer($customer);
@@ -45,19 +49,11 @@ class Checkout implements \JsonSerializable
     }
     public function withCustomerEmail(string $email): self
     {
-        if (!isset($this->metadata)) {
-            $this->metadata = new Metadata();
-        }
-
         $this->metadata->withCustomerEmail($email);
         return $this;
     }
     public function withIntegrationInformation(string $type, string $version, string $developer): self
     {
-        if (!isset($this->metadata)) {
-            $this->metadata = new Metadata();
-        }
-
         $this->metadata->withIntegrationInformation($type, $version, $developer);
         return $this;
     }
@@ -69,14 +65,15 @@ class Checkout implements \JsonSerializable
             'amount' => $this->amount?->jsonSerialize(),
             'redirectUrl' => $this->redirectUrl,
             'webhookUrl' => $this->webhookUrl,
-            'metadata' => $this->metadata?->jsonSerialize(),
+            'metadata' => $this->metadata->jsonSerialize(),
         ];
 
         if ($this->paymentMethod instanceof PaymentMethod) {
             $data['paymentMethod'] = $this->paymentMethod->jsonSerialize();
-        } else if (is_string($this->paymentMethod) && $this->paymentMethod !== '') {
+        } elseif ($this->paymentMethod !== '') {
             $data['paymentMethod'] = ['type' => $this->paymentMethod];
         }
+
         if ($this->expireAfter !== null) {
             $data['expireAfter'] = $this->expireAfter;
         }
