@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ICEPAY\Checkout;
 
 use ICEPAY\Checkout\Models\JsonDeserializable;
@@ -15,7 +17,7 @@ use Psr\Http\Message\ResponseInterface;
 
 class CheckoutClient
 {
-    const BASE_URL = 'https://checkout.icepay.com/';
+    public const BASE_URL = 'https://checkout.icepay.com/';
 
     public function __construct(protected HttpClient $httpClient = new HttpClient())
     {
@@ -42,13 +44,21 @@ class CheckoutClient
     // POST https://checkout.icepay.com/api/payments/{id}/refund
     public function refund(RefundRequest $refund, string $checkoutId): RefundResponse
     {
-        return $this->callCheckoutApi(self::BASE_URL . 'api/payments/' . $checkoutId . '/refund', RefundResponse::class, $refund);
+        return $this->callCheckoutApi(
+            self::BASE_URL . 'api/payments/' . $checkoutId . '/refund',
+            RefundResponse::class,
+            $refund
+        );
     }
 
     // POST https://checkout.icepay.com/api/payments/{id}/forward
     public function forward(ForwardRequest $forward, string $checkoutId): ForwardResponse
     {
-        return $this->callCheckoutApi(self::BASE_URL . 'api/payments/' . $checkoutId . '/forward', ForwardResponse::class, $forward);
+        return $this->callCheckoutApi(
+            self::BASE_URL . 'api/payments/' . $checkoutId . '/forward',
+            ForwardResponse::class,
+            $forward
+        );
     }
 
     // GET: https://checkout.icepay.com/api/payments/{key}
@@ -79,8 +89,11 @@ class CheckoutClient
      * @throws \Exception
      * @throws \JsonException
      */
-    protected function callCheckoutApi(string $url, string $className, ?JsonSerializable $payload = null): JsonDeserializable
-    {
+    protected function callCheckoutApi(
+        string $url,
+        string $className,
+        ?JsonSerializable $payload = null
+    ): JsonDeserializable {
         if (!is_subclass_of($className, JsonDeserializable::class)) {
             throw new \Exception("Class $className is not a subclass of JsonDeserializable");
         }

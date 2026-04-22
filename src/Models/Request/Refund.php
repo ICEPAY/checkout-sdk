@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ICEPAY\Checkout\Models\Request;
 
 use ICEPAY\Checkout\Models\Amount;

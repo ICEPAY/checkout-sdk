@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ICEPAY\Checkout\Models;
 
 abstract class JsonDeserializable
@@ -42,6 +44,9 @@ abstract class JsonDeserializable
                     $result->$key = $enumClass::fromString($value);
                     continue;
                 }
+            }
+            if ($propertyType instanceof \ReflectionNamedType && $propertyType->isBuiltin()) {
+                settype($value, $propertyType->getName());
             }
             $result->$key = $value;
         }

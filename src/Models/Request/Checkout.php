@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ICEPAY\Checkout\Models\Request;
 
 use ICEPAY\Checkout\Models\Amount;
@@ -8,15 +10,16 @@ use ICEPAY\Checkout\Models\PaymentMethod;
 
 class Checkout implements \JsonSerializable
 {
-    public function __construct(public string               $reference = '',
-                                public string               $description = '',
-                                public ?Amount              $amount = null,
-                                public string               $redirectUrl = '',
-                                public string               $webhookUrl = '',
-                                public PaymentMethod|string $paymentMethod = '',
-                                public Metadata             $metadata = new Metadata(),
-                                public ?int                 $expireAfter = null)
-    {
+    public function __construct(
+        public string $reference = '',
+        public string $description = '',
+        public ?Amount $amount = null,
+        public string $redirectUrl = '',
+        public string $webhookUrl = '',
+        public PaymentMethod|string $paymentMethod = '',
+        public Metadata $metadata = new Metadata(),
+        public ?int $expireAfter = null
+    ) {
     }
     public function withReference(string $reference): self
     {

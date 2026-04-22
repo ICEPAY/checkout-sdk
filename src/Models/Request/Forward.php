@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ICEPAY\Checkout\Models\Request;
 
 use ICEPAY\Checkout\Models\Amount;
@@ -7,8 +9,12 @@ use ICEPAY\Checkout\Models\Recipient;
 
 class Forward implements \JsonSerializable
 {
-    public function __construct(public string $reference, public Amount|int $amount, public Recipient|string $recipient, public ?string $description)
-    {
+    public function __construct(
+        public string $reference,
+        public Amount|int $amount,
+        public Recipient|string $recipient,
+        public ?string $description
+    ) {
     }
 
     public function withReference(string $reference): self

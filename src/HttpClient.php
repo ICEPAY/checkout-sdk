@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ICEPAY\Checkout;
 
 use Http\Discovery\Psr17FactoryDiscovery;
@@ -23,11 +25,10 @@ class HttpClient
     ];
 
     public function __construct(
-        ?ClientInterface         $client = null,
+        ?ClientInterface $client = null,
         ?RequestFactoryInterface $requestFactory = null,
-        ?StreamFactoryInterface  $streamFactory = null
-    )
-    {
+        ?StreamFactoryInterface $streamFactory = null
+    ) {
         $this->client = $client ?? Psr18ClientDiscovery::find();
         $this->requestFactory = $requestFactory ?? Psr17FactoryDiscovery::findRequestFactory();
         $this->streamFactory = $streamFactory ?? Psr17FactoryDiscovery::findStreamFactory();
