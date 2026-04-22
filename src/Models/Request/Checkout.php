@@ -10,7 +10,7 @@ class Checkout implements \JsonSerializable
 {
     public function __construct(public string               $reference = '',
                                 public string               $description = '',
-                                public ?Amount              $amount,
+                                public ?Amount              $amount = null,
                                 public string               $redirectUrl = '',
                                 public string               $webhookUrl = '',
                                 public PaymentMethod|string $paymentMethod = '',
