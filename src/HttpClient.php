@@ -88,9 +88,13 @@ class HttpClient
     /**
      * Decode a JSON response body into an associative array.
      */
-    public function decodeJson(ResponseInterface $response): array
+    public function decodeJson(ResponseInterface|string $response): array
     {
-        $contents = (string)$response->getBody();
+        if (is_string($response)) {
+            $contents = $response;
+        } else {
+            $contents = (string)$response->getBody();
+        }
         if ($contents === '') {
             return [];
         }
