@@ -2,6 +2,7 @@
 
 namespace ICEPAY\Checkout;
 
+use ICEPAY\Checkout\Exceptions\ApiException;
 use ICEPAY\Checkout\Models\JsonDeserializable;
 use ICEPAY\Checkout\Models\Request\Checkout as CheckoutRequest;
 use ICEPAY\Checkout\Models\Request\Forward as ForwardRequest;
@@ -61,12 +62,11 @@ class CheckoutClient
     public function getPaymentMethods(): array
     {
         $response = $this->httpClient->get(self::BASE_URL . 'api/payments/methods');
-        $this->checkStatusCode($response);
-        $json = $response->getBody()->__toString();
+        $data = $this->parseResponse($response);
 
         return array_map(static function (array $methodData): PaymentMethod {
             return PaymentMethod::fromArray($methodData);
-        }, json_decode($json, true));
+        }, $data);
     }
 
     /**
@@ -88,18 +88,51 @@ class CheckoutClient
         } else {
             $response = $this->httpClient->get($url);
         }
-        $this->checkStatusCode($response);
-        $json = $response->getBody()->__toString();
+        $data = $this->parseResponse($response);
 
-        return $className::fromResponse($json);
+        return $className::fromResponse($data);
     }
 
-    protected function checkStatusCode(ResponseInterface $response): bool
+    protected function parseResponse(ResponseInterface $response): array
     {
         $statusCode = $response->getStatusCode();
         if ($statusCode >= 200 && $statusCode < 300) {
-            return true;
+            return $this->httpClient->decodeJson($response);
         }
-        throw new \Exception("Request failed with status code: " . $statusCode);
+
+        $data = $this->httpClient->decodeJson($response);
+
+        if ($data !== null && isset($data['type'])) {
+            $type = str_replace('icepay/problem/', '', $data['type']);
+            $segments = explode('/', $type);
+            $className = '\\ICEPAY\\Checkout\\Exceptions';
+            foreach ($segments as $segment) {
+                $className .= '\\' . ucfirst($segment);
+            }
+
+            if (is_subclass_of($className, ApiException::class)) {
+                throw new $className(
+                    message: $data['message'] ?? $data['title'] ?? '',
+                    code: $statusCode,
+                    type: $data['type'] ?? null,
+                    documentation: $data['documentation'] ?? null,
+                    errors: $data['errors'] ?? null,
+                    trace: $data['trace'] ?? null,
+                );
+            }
+
+            if (class_exists($className)) {
+                throw new $className($data['message'] ?? '', $statusCode, );
+            }
+        }
+
+        $message = "Request failed with status code: " . $statusCode;
+        if (isset($data['message'])) {
+            $message = $data['message'];
+        } elseif (isset($data['title'])) {
+            $message = $data['title'];
+        }
+
+        throw new \Exception($message);
     }
 }

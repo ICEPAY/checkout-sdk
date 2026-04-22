@@ -2,6 +2,7 @@
 
 namespace ICEPAY\Tests\Unit;
 
+use ICEPAY\Checkout\Exceptions\Payment\NotFound;
 use ICEPAY\Checkout\CheckoutClient;
 use ICEPAY\Checkout\HttpClient;
 use ICEPAY\Checkout\Models\Amount;
@@ -58,6 +59,61 @@ class CheckoutClientTest extends TestCase
         $this->assertCount(2, $result);
         $this->assertEquals('card', $result[0]->id);
         $this->assertEquals('paypal', $result[1]->id);
+    }
+
+    public function testKnownErrorMapping()
+    {
+        $responseBody = [
+            'type' => 'icepay/problem/payment/notFound',
+            'status' => 404,
+            'title' => 'Payment not found',
+        ];
+        $response = new Response(404, ['Content-Type' => 'application/json'], json_encode($responseBody));
+        $checkoutClient = $this->getFixedResponseClient($response);
+
+        $this->expectException(NotFound::class);
+        $checkoutClient->getCheckout('pi-12345');
+    }
+
+    public function testDynamicErrorMapping()
+    {
+        $responseBody = [
+            'type' => 'icepay/problem/payment/configuration',
+            'status' => 400,
+            'title' => 'Configuration error',
+            'documentation' => ['https://docs.icepay.com'],
+            'errors' => ['some' => 'error'],
+            'trace' => 'trace-123',
+        ];
+        $response = new Response(400, ['Content-Type' => 'application/json'], json_encode($responseBody));
+        $checkoutClient = $this->getFixedResponseClient($response);
+
+        try {
+            $checkoutClient->getCheckout('pi-12345');
+            $this->fail('Expected exception was not thrown');
+        } catch (\ICEPAY\Checkout\Exceptions\Payment\Configuration $e) {
+            $this->assertEquals('Configuration error', $e->getMessage());
+            $this->assertEquals(400, $e->getCode());
+            $this->assertEquals('icepay/problem/payment/configuration', $e->type);
+            $this->assertEquals(['https://docs.icepay.com'], $e->documentation);
+            $this->assertEquals(['some' => 'error'], $e->errors);
+            $this->assertEquals('trace-123', $e->trace);
+        }
+    }
+
+    public function testUnknownErrorTypeDoesNotCrash()
+    {
+        $responseBody = [
+            'type' => 'icepay/problem/unknown/error',
+            'status' => 400,
+            'title' => 'Some unknown error',
+        ];
+        $response = new Response(400, ['Content-Type' => 'application/json'], json_encode($responseBody));
+        $checkoutClient = $this->getFixedResponseClient($response);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionMessage('Some unknown error');
+        $checkoutClient->getCheckout('pi-12345');
     }
 
     protected function getFixedResponseClient(Response $response): CheckoutClient
