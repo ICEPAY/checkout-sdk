@@ -129,7 +129,7 @@ function postbackHandler(MessageInterface $request): void {
 ## Running PHPUnit
 
 ```shell
-composer phpunit
+composer test
 ```
 
 ## Quick code example to get payment methods

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace ICEPAY\Checkout;
 
 use Http\Discovery\Psr17FactoryDiscovery;
@@ -15,17 +17,18 @@ class HttpClient
     protected ClientInterface $client;
     protected RequestFactoryInterface $requestFactory;
     protected StreamFactoryInterface $streamFactory;
+
+    /** @var array<string, string> */
     protected array $defaultHeaders = [
         'Content-Type' => 'application/json',
         'Accept' => 'application/json',
     ];
 
     public function __construct(
-        ?ClientInterface         $client = null,
+        ?ClientInterface $client = null,
         ?RequestFactoryInterface $requestFactory = null,
-        ?StreamFactoryInterface  $streamFactory = null
-    )
-    {
+        ?StreamFactoryInterface $streamFactory = null
+    ) {
         $this->client = $client ?? Psr18ClientDiscovery::find();
         $this->requestFactory = $requestFactory ?? Psr17FactoryDiscovery::findRequestFactory();
         $this->streamFactory = $streamFactory ?? Psr17FactoryDiscovery::findStreamFactory();
@@ -45,6 +48,8 @@ class HttpClient
 
     /**
      * Send a POST request with a JSON payload.
+     *
+     * @param array<string, string|null> $headers
      */
     public function post(string $url, mixed $payload, array $headers = []): ResponseInterface
     {
@@ -63,6 +68,7 @@ class HttpClient
         return $this->send($request);
     }
 
+    /** @param array<string, string|null> $headers */
     public function get(string $string, array $headers = []): ResponseInterface
     {
         $request = $this->requestFactory->createRequest('GET', $string);
@@ -87,6 +93,8 @@ class HttpClient
 
     /**
      * Decode a JSON response body into an associative array.
+     *
+     * @return array<string, mixed>
      */
     public function decodeJson(ResponseInterface $response): array
     {
