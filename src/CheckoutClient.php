@@ -115,38 +115,33 @@ class CheckoutClient
         }
 
         $data = $this->httpClient->decodeJson($response);
+        $fallbackMessage = $data['message'] ?? $data['title'] ?? "Request failed with status code: $statusCode";
 
-        if (isset($data['type'])) {
-            $type = str_replace('icepay/problem/', '', $data['type']);
-            $segments = explode('/', $type);
-            $className = '\\ICEPAY\\Checkout\\Exceptions';
-            foreach ($segments as $segment) {
-                $className .= '\\' . ucfirst($segment);
-            }
-
-            if (is_subclass_of($className, ApiException::class)) {
-                throw new $className(
-                    message: $data['message'] ?? $data['title'] ?? '',
-                    code: $statusCode,
-                    type: $data['type'],
-                    documentation: $data['documentation'] ?? null,
-                    errors: $data['errors'] ?? null,
-                    trace: $data['trace'] ?? null,
-                );
-            }
-
-            if (class_exists($className)) {
-                throw new $className($data['message'] ?? '', $statusCode,);
-            }
+        if (!isset($data['type'])) {
+            throw new \Exception($fallbackMessage);
         }
 
-        $message = "Request failed with status code: " . $statusCode;
-        if (isset($data['message'])) {
-            $message = $data['message'];
-        } elseif (isset($data['title'])) {
-            $message = $data['title'];
+        $className = array_reduce(
+            explode('/', str_replace('icepay/problem/', '', $data['type'])),
+            fn(string $carry, string $segment) => $carry . '\\' . ucfirst($segment),
+            '\\ICEPAY\\Checkout\\Exceptions'
+        );
+
+        if (is_subclass_of($className, ApiException::class)) {
+            throw new $className(
+                message: $data['message'] ?? $data['title'] ?? '',
+                code: $statusCode,
+                type: $data['type'],
+                documentation: $data['documentation'] ?? null,
+                errors: $data['errors'] ?? null,
+                trace: $data['trace'] ?? null,
+            );
         }
 
-        throw new \Exception($message);
+        if (class_exists($className)) {
+            throw new $className($data['message'] ?? '', $statusCode);
+        }
+
+        throw new \Exception($fallbackMessage);
     }
 }
