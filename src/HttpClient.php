@@ -90,11 +90,8 @@ class HttpClient
      */
     public function decodeJson(ResponseInterface|string $response): array
     {
-        if (is_string($response)) {
-            $contents = $response;
-        } else {
-            $contents = (string)$response->getBody();
-        }
+        $contents = is_string($response) ? $response: (string)$response->getBody();
+
         if ($contents === '') {
             return [];
         }
