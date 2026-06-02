@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ICEPAY\Checkout;
 
+use ICEPAY\Checkout\Exceptions\ApiException;
 use ICEPAY\Checkout\Models\JsonDeserializable;
 use ICEPAY\Checkout\Models\Request\Checkout as CheckoutRequest;
 use ICEPAY\Checkout\Models\Request\Forward as ForwardRequest;
@@ -72,11 +73,10 @@ class CheckoutClient
     public function getPaymentMethods(): array
     {
         $response = $this->httpClient->get(self::BASE_URL . 'api/payments/methods');
-        $this->checkStatusCode($response);
 
         return array_values(array_map(static function (array $methodData): PaymentMethod {
             return PaymentMethod::fromArray($methodData);
-        }, $this->httpClient->decodeJson($response)));
+        }, $this->parseResponse($response)));
     }
 
     /**
@@ -101,18 +101,47 @@ class CheckoutClient
         } else {
             $response = $this->httpClient->get($url);
         }
-        $this->checkStatusCode($response);
-        $json = $response->getBody()->__toString();
+        $data = $this->parseResponse($response);
 
-        return $className::fromResponse($json);
+        return $className::fromResponse($data);
     }
 
-    protected function checkStatusCode(ResponseInterface $response): bool
+    /** @return array<string, mixed> */
+    protected function parseResponse(ResponseInterface $response): array
     {
         $statusCode = $response->getStatusCode();
         if ($statusCode >= 200 && $statusCode < 300) {
-            return true;
+            return $this->httpClient->decodeJson($response);
         }
-        throw new \Exception("Request failed with status code: " . $statusCode);
+
+        $data = $this->httpClient->decodeJson($response);
+        $fallbackMessage = $data['message'] ?? $data['title'] ?? "Request failed with status code: $statusCode";
+
+        if (!isset($data['type'])) {
+            throw new \Exception($fallbackMessage);
+        }
+
+        $className = array_reduce(
+            explode('/', str_replace('icepay/problem/', '', $data['type'])),
+            fn(string $carry, string $segment) => $carry . '\\' . ucfirst($segment),
+            '\\ICEPAY\\Checkout\\Exceptions'
+        );
+
+        if (is_subclass_of($className, ApiException::class)) {
+            throw new $className(
+                message: $data['message'] ?? $data['title'] ?? '',
+                code: $statusCode,
+                type: $data['type'],
+                documentation: $data['documentation'] ?? null,
+                errors: $data['errors'] ?? null,
+                trace: $data['trace'] ?? null,
+            );
+        }
+
+        if (class_exists($className)) {
+            throw new $className($data['message'] ?? '', $statusCode);
+        }
+
+        throw new \Exception($fallbackMessage);
     }
 }
