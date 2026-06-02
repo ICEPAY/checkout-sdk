@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ICEPAY\Checkout\Models;
 
-class Recipient implements \JsonSerializable
+class Recipient extends JsonDeserializable implements \JsonSerializable
 {
     public function __construct(public string $id)
     {

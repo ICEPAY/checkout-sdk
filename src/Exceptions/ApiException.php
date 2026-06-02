@@ -19,7 +19,7 @@ class ApiException extends \Exception
         public readonly ?string $type = null,
         public readonly ?array $documentation = null,
         public readonly ?array $errors = null,
-        public readonly ?string $trace = null
+        public readonly ?string $serverTrace = null
     ) {
         parent::__construct($message, $code, $previous);
     }

@@ -10,12 +10,14 @@ enum FinancialStatus implements JsonSerializable
 {
     case uncleared;
     case cleared;
+    case unknown;
 
     public function toString(): string
     {
         return match ($this) {
             FinancialStatus::uncleared => 'uncleared',
             FinancialStatus::cleared => 'cleared',
+            FinancialStatus::unknown => 'unknown',
         };
     }
 
@@ -24,7 +26,7 @@ enum FinancialStatus implements JsonSerializable
         return match ($status) {
             'uncleared' => FinancialStatus::uncleared,
             'cleared' => FinancialStatus::cleared,
-            default => throw new \InvalidArgumentException("Invalid financial status: $status"),
+            default => FinancialStatus::unknown,
         };
     }
 

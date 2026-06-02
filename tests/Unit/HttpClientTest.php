@@ -2,11 +2,38 @@
 
 namespace ICEPAY\Tests\Unit;
 
+use ICEPAY\Checkout\Exceptions\ApiException;
+use ICEPAY\Checkout\Exceptions\Connection;
 use ICEPAY\Checkout\HttpClient;
 use ICEPAY\Tests\Support\FakeClient;
+use Psr\Http\Client\ClientExceptionInterface;
+use Psr\Http\Client\ClientInterface;
+use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 
 class HttpClientTest extends \PHPUnit\Framework\TestCase
 {
+    public function testTransportFailureIsWrappedInAConnectionException(): void
+    {
+        $throwingClient = new class implements ClientInterface {
+            public function sendRequest(RequestInterface $request): ResponseInterface
+            {
+                throw new class ('Connection refused') extends \RuntimeException implements ClientExceptionInterface {
+                };
+            }
+        };
+
+        $client = new HttpClient(client: $throwingClient);
+
+        try {
+            $client->get('https://example.com/resource');
+            $this->fail('Expected a Connection exception');
+        } catch (Connection $e) {
+            $this->assertInstanceOf(ApiException::class, $e);
+            $this->assertStringContainsString('Connection refused', $e->getMessage());
+        }
+    }
+
     public function testPostJsonCreatesProperRequest(): void
     {
         $fake = new FakeClient();

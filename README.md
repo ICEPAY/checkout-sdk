@@ -32,7 +32,7 @@ $checkoutRequest = new CheckoutRequest(
     amount: new Amount(1234, Amount::CURRENCY_EUR),
 );
 
-$response = $this->checkoutClient->checkout($checkoutRequest);
+$response = $checkoutClient->createCheckout($checkoutRequest);
 print_r($response->links->checkout);
 ```
 
@@ -53,7 +53,7 @@ $checkoutRequest = new CheckoutRequest(
     paymentMethod: 'card',
 );
 
-$response = $this->checkoutClient->checkout($checkoutRequest);
+$response = $checkoutClient->createCheckout($checkoutRequest);
 print_r($response->links->direct);
 ```
 
@@ -75,51 +75,106 @@ class WpHttpWrapper implements ClientInterface
         $args = [
             'method' => $request->getMethod(),
             'headers' => $request->getHeaders(),
-		];
+        ];
 
-        if(!in_array($request->getMethod(), ['GET', 'HEAD'])){
+        if (!in_array($request->getMethod(), ['GET', 'HEAD'])) {
             $args['body'] = $request->getBody();
         }
 
         $result = wp_remote_request($request->getUri(), $args);
-        if(!is_wp_error($result))
-        {
-            throw new HttpException('HTTP request failed: ' . $result->get_error_message());
+        if (is_wp_error($result)) {
+            throw new \RuntimeException('HTTP request failed: ' . $result->get_error_message());
         }
 
         return new Response($result['response']['code'], $result['headers'], $result['body']);
     }
 }
 ```
-You can then use this custom HTTP client with the CheckoutClient like so:
+You can then use this custom HTTP client with the CheckoutClient by wrapping it in the SDK's
+`HttpClient` and passing that to the constructor:
 
 ```php
-$httpClient = new WpHttpWrapper();
-$checkoutClient = (new CheckoutClient())
-    ->withHttpClient($httpClient)
+use ICEPAY\Checkout\CheckoutClient;
+use ICEPAY\Checkout\HttpClient;
+
+$httpClient = new HttpClient(client: new WpHttpWrapper());
+$checkoutClient = (new CheckoutClient($httpClient))
     ->withAuthorization(merchantId: 'your_merchant_id', merchantSecret: 'your_merchant_secret');
 ```
 
-## Handling Postback Requests
+## Error Handling
 
-After a payment status changes, ICEPAY sends a postback request to the provided webhookUrl. You can handle this request and verify its authenticity using the following example:
+Every call on `CheckoutClient` (`createCheckout`, `getCheckout`, `refund`, `forward`, `getPaymentMethods`) throws `ICEPAY\Checkout\Exceptions\ApiException` for any failure, so a single catch covers the whole error model:
 
 ```php
-use ICEPAY\Checkout\Models\Response\Checkout;
+use ICEPAY\Checkout\Exceptions\ApiException;
+
+try {
+    $response = $checkoutClient->createCheckout($checkoutRequest);
+} catch (ApiException $e) {
+    $e->getMessage(); // human-readable message
+    $e->getCode();    // HTTP status code (0 for transport failures)
+    $e->type;         // problem type, e.g. "icepay/problem/payment/validation"
+    $e->errors;       // field-level validation errors, when present
+}
+```
+
+This includes:
+
+- **Typed API errors** such as `Exceptions\Payment\Validation` or `Exceptions\Payment\NotFound`, which extend `ApiException`. Catch a specific subclass to handle a particular case, or `ApiException` to handle them all.
+- **Transport failures** (timeout, DNS, refused connection), which are thrown as `Exceptions\Connection` (also an `ApiException`) rather than a raw PSR-18 exception.
+
+## Handling Postback Requests
+
+After a payment status changes, ICEPAY sends a postback request to the provided webhookUrl. The `PostbackHandler` verifies the request's signature against your merchant secret and returns the parsed payment, so you don't have to recompute the HMAC yourself.
+
+The primary API is framework-agnostic: pass the raw request body and the `ICEPAY-Signature` header value as strings. This works anywhere (plain PHP, WordPress/WooCommerce, Magento), since every framework can give you those two strings:
+
+```php
+use ICEPAY\Checkout\PostbackHandler;
+use ICEPAY\Checkout\Exceptions\InvalidSignature;
+
+$handler = new PostbackHandler(merchantSecret: 'your_merchant_secret_key');
+
+$body = file_get_contents('php://input');
+$signature = $_SERVER['HTTP_ICEPAY_SIGNATURE'] ?? '';
+
+try {
+    $payment = $handler->handle($body, $signature);
+} catch (InvalidSignature) {
+    // Invalid signature: reject the request and stop processing.
+    http_response_code(400);
+    return;
+}
+
+// Process the updated payment ($payment is a parsed Checkout) as needed
+```
+
+If you only need to check authenticity without parsing the payment, use `verify()`:
+
+```php
+if (!$handler->verify($body, $signature)) {
+    http_response_code(400);
+    return;
+}
+```
+
+### PSR-7 requests
+
+If you already have a PSR-7 `MessageInterface` (for example from a PSR-7 based framework), use `handleRequest()` / `verifyRequest()`, which read the body and `ICEPAY-Signature` header for you:
+
+```php
 use Psr\Http\Message\MessageInterface;
 
-function postbackHandler(MessageInterface $request): void {
-    $providedSignature = $request->getHeader('ICEPAY-Signature');
-    $body = $request->getBody()->getContents();
-    $secretKey = 'your_merchant_secret_key'; // Replace with your actual secret key
-    $calculatedSignature = base64_encode(hash_hmac('sha256', $body, $secretKey, true));
-    if (!hash_equals($providedSignature[0], $calculatedSignature)) {
-        // Invalid signature, reject the request
+function postbackHandler(MessageInterface $request) use ($handler): void {
+    try {
+        $payment = $handler->handleRequest($request);
+    } catch (InvalidSignature) {
         http_response_code(400);
+        return;
     }
 
-    $payment = Checkout::fromResponse($body);
-    // Process the updated payment data as needed
+    // Process $payment
 }
 ```
 

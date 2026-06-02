@@ -6,6 +6,8 @@ namespace ICEPAY\Checkout;
 
 use Http\Discovery\Psr17FactoryDiscovery;
 use Http\Discovery\Psr18ClientDiscovery;
+use ICEPAY\Checkout\Exceptions\Connection;
+use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\RequestInterface;
@@ -85,10 +87,16 @@ class HttpClient
 
     /**
      * Generic send wrapper.
+     *
+     * @throws Connection When the request fails at the transport layer (timeout, DNS, refused connection).
      */
     public function send(RequestInterface $request): ResponseInterface
     {
-        return $this->client->sendRequest($request);
+        try {
+            return $this->client->sendRequest($request);
+        } catch (ClientExceptionInterface $e) {
+            throw new Connection('HTTP request to ICEPAY failed: ' . $e->getMessage(), 0, $e);
+        }
     }
 
     /**
@@ -98,16 +106,7 @@ class HttpClient
      */
     public function decodeJson(ResponseInterface|string $response): array
     {
-        $contents = is_string($response) ? $response : (string)$response->getBody();
-
-        if ($contents === '') {
-            return [];
-        }
-        try {
-            return json_decode($contents, true, 512, JSON_THROW_ON_ERROR) ?? [];
-        } catch (\JsonException $e) {
-            throw new \RuntimeException('Invalid JSON in response: ' . $e->getMessage(), 0, $e);
-        }
+        return Json::decode(is_string($response) ? $response : (string) $response->getBody());
     }
 
     protected function encodeJson(mixed $payload): string
