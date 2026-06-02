@@ -96,9 +96,10 @@ class HttpClient
      *
      * @return array<string, mixed>
      */
-    public function decodeJson(ResponseInterface $response): array
+    public function decodeJson(ResponseInterface|string $response): array
     {
-        $contents = (string)$response->getBody();
+        $contents = is_string($response) ? $response : (string)$response->getBody();
+
         if ($contents === '') {
             return [];
         }
