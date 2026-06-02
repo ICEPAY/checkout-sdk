@@ -136,7 +136,7 @@ class CheckoutClient
             }
 
             if (class_exists($className)) {
-                throw new $className($data['message'] ?? '', $statusCode, );
+                throw new $className($data['message'] ?? '', $statusCode,);
             }
         }
 

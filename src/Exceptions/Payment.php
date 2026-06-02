@@ -1,10 +1,9 @@
 <?php
 
-namespace ICEPAY\Checkout\Exceptions;
+declare(strict_types=1);
 
-use Exception;
+namespace ICEPAY\Checkout\Exceptions;
 
 class Payment extends ApiException
 {
-
 }
