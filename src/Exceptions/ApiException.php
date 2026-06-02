@@ -6,6 +6,10 @@ use Throwable;
 
 class ApiException extends \Exception
 {
+    /**
+     * @param array<string, mixed>|null $documentation
+     * @param array<string, mixed>|null $errors
+     */
     public function __construct(string $message = "",
                                 int $code = 0,
                                 ?Throwable $previous = null,
