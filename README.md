@@ -78,10 +78,10 @@ class WpHttpWrapper implements ClientInterface
         ];
 
         if (!in_array($request->getMethod(), ['GET', 'HEAD'])) {
-            $args['body'] = $request->getBody();
+            $args['body'] = (string) $request->getBody();
         }
 
-        $result = wp_remote_request($request->getUri(), $args);
+        $result = wp_remote_request((string) $request->getUri(), $args);
         if (is_wp_error($result)) {
             throw new \RuntimeException('HTTP request failed: ' . $result->get_error_message());
         }
@@ -166,7 +166,7 @@ If you already have a PSR-7 `MessageInterface` (for example from a PSR-7 based f
 ```php
 use Psr\Http\Message\MessageInterface;
 
-function postbackHandler(MessageInterface $request) use ($handler): void {
+$postbackHandler = function (MessageInterface $request) use ($handler): void {
     try {
         $payment = $handler->handleRequest($request);
     } catch (InvalidSignature) {
@@ -175,7 +175,7 @@ function postbackHandler(MessageInterface $request) use ($handler): void {
     }
 
     // Process $payment
-}
+};
 ```
 
 

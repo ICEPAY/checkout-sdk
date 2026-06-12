@@ -100,9 +100,10 @@ class HttpClient
     }
 
     /**
-     * Decode a JSON response body into an associative array.
+     * Decode a JSON response body into an array.
      *
-     * @return array<string, mixed>
+     * @return array<int|string, mixed>
+     * @throws \JsonException When the body is not valid JSON.
      */
     public function decodeJson(ResponseInterface|string $response): array
     {

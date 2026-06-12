@@ -27,7 +27,7 @@ final class PostbackHandler
      * Verify the postback's signature and return the parsed payment.
      *
      * @throws InvalidSignature When the signature does not match the body.
-     * @throws \RuntimeException When the body is not valid JSON.
+     * @throws \JsonException When the body is not valid JSON.
      */
     public function handle(string $body, string $signature): Checkout
     {
@@ -45,7 +45,7 @@ final class PostbackHandler
 
     /**
      * @throws InvalidSignature When the signature does not match the body.
-     * @throws \RuntimeException When the body is not valid JSON.
+     * @throws \JsonException When the body is not valid JSON.
      */
     public function handleRequest(MessageInterface $request): Checkout
     {

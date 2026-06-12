@@ -128,7 +128,7 @@ class CheckoutClientTest extends TestCase
         $response = new Response(400, ['Content-Type' => 'application/json'], json_encode($responseBody));
         $checkoutClient = $this->getFixedResponseClient($response);
 
-        $this->expectException(\Exception::class);
+        $this->expectException(ApiException::class);
         $this->expectExceptionMessage('Some unknown error');
         $checkoutClient->getCheckout('pi-12345');
     }

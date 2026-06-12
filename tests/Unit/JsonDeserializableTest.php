@@ -213,8 +213,6 @@ class JsonDeserializableTest extends TestCase
             'recipient'   => ['id' => 'rcpt-1'],
         ]);
 
-        $serialized = $forward->jsonSerialize();
-
         $encoded = json_decode(json_encode($forward), true);
 
         $this->assertSame('fw-1', $encoded['key']);

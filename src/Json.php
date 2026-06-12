@@ -10,7 +10,7 @@ namespace ICEPAY\Checkout;
 final class Json
 {
     /**
-     * @return array<string, mixed>
+     * @return array<int|string, mixed>
      * @throws \JsonException When the input is not valid JSON.
      */
     public static function decode(string $json): array
