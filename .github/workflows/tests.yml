@@ -5,8 +5,8 @@ on:
   pull_request:
 
 jobs:
-  unit-tests:
-    name: Unit Tests (PHP ${{ matrix.php }})
+  tests:
+    name: Tests (PHP ${{ matrix.php }})
     runs-on: ubuntu-latest
 
     strategy:
@@ -26,5 +26,5 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist
 
-      - name: Run unit tests
-        run: vendor/bin/phpunit --testsuite Unit
+      - name: Run tests
+        run: vendor/bin/phpunit

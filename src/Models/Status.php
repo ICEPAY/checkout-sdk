@@ -13,6 +13,7 @@ enum Status implements JsonSerializable
     case pending;
     case expired;
     case cancelled;
+    case unknown;
 
     public function toString(): string
     {
@@ -22,6 +23,7 @@ enum Status implements JsonSerializable
             Status::pending => 'pending',
             Status::expired => 'expired',
             Status::cancelled => 'cancelled',
+            Status::unknown => 'unknown',
         };
     }
 
@@ -33,7 +35,7 @@ enum Status implements JsonSerializable
             'pending' => Status::pending,
             'expired' => Status::expired,
             'cancelled' => Status::cancelled,
-            default => throw new \InvalidArgumentException("Invalid status: $status"),
+            default => Status::unknown,
         };
     }
 

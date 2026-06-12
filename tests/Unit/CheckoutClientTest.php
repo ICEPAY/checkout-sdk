@@ -2,14 +2,17 @@
 
 namespace ICEPAY\Tests\Unit;
 
+use ICEPAY\Checkout\Exceptions\ApiException;
 use ICEPAY\Checkout\Exceptions\Payment\Configuration;
 use ICEPAY\Checkout\Exceptions\Payment\NotFound;
 use ICEPAY\Checkout\CheckoutClient;
 use ICEPAY\Checkout\HttpClient;
 use ICEPAY\Checkout\Models\Amount;
 use ICEPAY\Checkout\Models\Request\Checkout;
+use ICEPAY\Checkout\Models\Request\Forward as ForwardRequest;
 use ICEPAY\Checkout\Models\PaymentMethod;
 use ICEPAY\Checkout\Models\Request\Refund;
+use ICEPAY\Checkout\Models\Response\Forward as ForwardResponse;
 use ICEPAY\Checkout\Models\Status;
 use ICEPAY\Tests\Support\FakeClient;
 use ICEPAY\Tests\TestCase;
@@ -37,7 +40,7 @@ class CheckoutClientTest extends TestCase
         foreach ($queuedBodies as $body) {
             $fake->queueJson(200, $body);
         }
-        $client = (new CheckoutClient())->withHttpClient(new HttpClient(client: $fake));
+        $client = new CheckoutClient(new HttpClient(client: $fake));
         return [$fake, $client];
     }
 
@@ -95,7 +98,7 @@ class CheckoutClientTest extends TestCase
             'type' => 'icepay/problem/payment/configuration',
             'status' => 400,
             'title' => 'Configuration error',
-            'documentation' => ['https://docs.icepay.com'],
+            'documentation' => ['link' => 'https://docs.icepay.com'],
             'errors' => ['some' => 'error'],
             'trace' => 'trace-123',
         ];
@@ -109,9 +112,9 @@ class CheckoutClientTest extends TestCase
             $this->assertSame('Configuration error', $e->getMessage());
             $this->assertSame(400, $e->getCode());
             $this->assertSame('icepay/problem/payment/configuration', $e->type);
-            $this->assertSame(['https://docs.icepay.com'], $e->documentation);
+            $this->assertSame(['link' => 'https://docs.icepay.com'], $e->documentation);
             $this->assertSame(['some' => 'error'], $e->errors);
-            $this->assertSame('trace-123', $e->trace);
+            $this->assertSame('trace-123', $e->serverTrace);
         }
     }
 
@@ -125,8 +128,18 @@ class CheckoutClientTest extends TestCase
         $response = new Response(400, ['Content-Type' => 'application/json'], json_encode($responseBody));
         $checkoutClient = $this->getFixedResponseClient($response);
 
-        $this->expectException(\Exception::class);
+        $this->expectException(ApiException::class);
         $this->expectExceptionMessage('Some unknown error');
+        $checkoutClient->getCheckout('pi-12345');
+    }
+
+    public function testUntypedErrorThrowsApiException(): void
+    {
+        $response = new Response(422, ['Content-Type' => 'application/json'], '{"message":"The amount is invalid"}');
+        $checkoutClient = $this->getFixedResponseClient($response);
+
+        $this->expectException(ApiException::class);
+        $this->expectExceptionMessage('The amount is invalid');
         $checkoutClient->getCheckout('pi-12345');
     }
 
@@ -368,14 +381,14 @@ class CheckoutClientTest extends TestCase
 
         $checkout = new Checkout(
             amount: new Amount(1234, Amount::CURRENCY_EUR),
-            paymentMethod: new PaymentMethod(PaymentMethod::TYPE_IDEAL, 'INGBNL2A'),
+            paymentMethod: new PaymentMethod(PaymentMethod::TYPE_EPS, 'AT61000'),
         );
 
         $checkoutClient->createCheckout($checkout);
 
         $body = $fake->getLastRequestBody();
-        $this->assertSame(PaymentMethod::TYPE_IDEAL, $body['paymentMethod']['type']);
-        $this->assertSame('INGBNL2A',                $body['paymentMethod']['issuer']);
+        $this->assertSame(PaymentMethod::TYPE_EPS, $body['paymentMethod']['type']);
+        $this->assertSame('AT61000',               $body['paymentMethod']['issuer']);
     }
 
     public function testExpireAfterIsAbsentFromBodyWhenNotSet(): void
@@ -474,5 +487,63 @@ class CheckoutClientTest extends TestCase
         );
 
         $checkoutClient->createCheckout($checkoutRequest);
+    }
+
+    // --- forward() tests ---
+
+    private function minimalForwardResponse(string $reference = 'ref-001'): array
+    {
+        return [
+            'key'         => 'fw-abc123',
+            'status'      => Status::completed->toString(),
+            'amount'      => ['value' => 500, 'currency' => Amount::CURRENCY_EUR],
+            'reference'   => $reference,
+            'description' => 'Payout',
+            'recipient'   => ['id' => 'rcpt-1'],
+        ];
+    }
+
+    public function testForwardSendsPostToCorrectUrl(): void
+    {
+        [$fake, $checkoutClient] = $this->makeClient($this->minimalForwardResponse());
+
+        $checkoutClient->forward(
+            new ForwardRequest('ref-001', new Amount(500, Amount::CURRENCY_EUR), 'rcpt-1', 'Payout'),
+            'pi-abc123'
+        );
+
+        $request = $fake->getLastRequest();
+        $this->assertSame('POST', $request->getMethod());
+        $this->assertSame('https://checkout.icepay.com/api/payments/pi-abc123/forward', (string) $request->getUri());
+    }
+
+    public function testForwardSendsCorrectBody(): void
+    {
+        [$fake, $checkoutClient] = $this->makeClient($this->minimalForwardResponse());
+
+        $checkoutClient->forward(
+            new ForwardRequest('ref-001', new Amount(500, Amount::CURRENCY_EUR), 'rcpt-1', 'Payout'),
+            'pi-abc123'
+        );
+
+        $body = $fake->getLastRequestBody();
+        $this->assertSame('ref-001', $body['reference']);
+        $this->assertSame(500, $body['amount']['value']);
+        $this->assertSame('rcpt-1', $body['recipient']['id']);
+        $this->assertSame('Payout', $body['description']);
+    }
+
+    public function testForwardParsesResponse(): void
+    {
+        $reference = 'ref-fwd-' . time();
+        [, $checkoutClient] = $this->makeClient($this->minimalForwardResponse($reference));
+
+        $response = $checkoutClient->forward(
+            new ForwardRequest($reference, new Amount(500, Amount::CURRENCY_EUR), 'rcpt-1', 'Payout'),
+            'pi-abc123'
+        );
+
+        $this->assertInstanceOf(ForwardResponse::class, $response);
+        $this->assertSame($reference, $response->reference);
     }
 }

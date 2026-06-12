@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace ICEPAY\Checkout\Models;
 
+use ICEPAY\Checkout\Json;
+
 abstract class JsonDeserializable
 {
-    /** @param array<string, mixed>|string $data */
+    /**
+     * @param array<string, mixed>|string $data
+     * @throws \JsonException When a JSON string is malformed.
+     */
     public static function fromResponse(array|string $data): static
     {
-        if (is_string($data)) {
-            $data = json_decode($data, true);
-        }
-
-        return static::fromArray($data);
+        return static::fromArray(is_string($data) ? Json::decode($data) : $data);
     }
 
     /** @param array<string, mixed> $data */
@@ -25,6 +26,14 @@ abstract class JsonDeserializable
                 continue;
             }
             $propertyType = (new \ReflectionProperty($result, $key))->getType();
+
+            if ($value === null) {
+                if ($propertyType === null || $propertyType->allowsNull()) {
+                    $result->$key = null;
+                }
+                continue;
+            }
+
             if (is_array($value)) {
                 if ($propertyType instanceof \ReflectionNamedType && !$propertyType->isBuiltin()) {
                     $propertyClass = $propertyType->getName();
