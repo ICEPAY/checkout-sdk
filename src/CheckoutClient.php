@@ -30,19 +30,23 @@ class CheckoutClient
         return $this;
     }
 
-    public function withHttpClient(HttpClient $httpClient): self
-    {
-        $this->httpClient = $httpClient;
-        return $this;
-    }
-
-    // POST: https://checkout.icepay.com/api/payments
+    /**
+     * POST https://checkout.icepay.com/api/payments
+     *
+     * @throws ApiException On any API error response, or a transport failure (Connection).
+     * @throws \JsonException When the response body is not valid JSON.
+     */
     public function createCheckout(CheckoutRequest $checkout): CheckoutResponse
     {
         return $this->callCheckoutApi(self::BASE_URL . 'api/payments', CheckoutResponse::class, $checkout);
     }
 
-    // POST https://checkout.icepay.com/api/payments/{id}/refund
+    /**
+     * POST https://checkout.icepay.com/api/payments/{id}/refund
+     *
+     * @throws ApiException On any API error response, or a transport failure (Connection).
+     * @throws \JsonException When the response body is not valid JSON.
+     */
     public function refund(RefundRequest $refund, string $checkoutId): RefundResponse
     {
         return $this->callCheckoutApi(
@@ -52,7 +56,12 @@ class CheckoutClient
         );
     }
 
-    // POST https://checkout.icepay.com/api/payments/{id}/forward
+    /**
+     * POST https://checkout.icepay.com/api/payments/{id}/forward
+     *
+     * @throws ApiException On any API error response, or a transport failure (Connection).
+     * @throws \JsonException When the response body is not valid JSON.
+     */
     public function forward(ForwardRequest $forward, string $checkoutId): ForwardResponse
     {
         return $this->callCheckoutApi(
@@ -62,14 +71,24 @@ class CheckoutClient
         );
     }
 
-    // GET: https://checkout.icepay.com/api/payments/{key}
+    /**
+     * GET https://checkout.icepay.com/api/payments/{key}
+     *
+     * @throws ApiException On any API error response, or a transport failure (Connection).
+     * @throws \JsonException When the response body is not valid JSON.
+     */
     public function getCheckout(string $checkoutId): CheckoutResponse
     {
         return $this->callCheckoutApi(self::BASE_URL . 'api/payments/' . $checkoutId, CheckoutResponse::class);
     }
 
-    // GET: https://checkout.icepay.com/api/payments/methods
-    /** @return list<PaymentMethod> */
+    /**
+     * GET https://checkout.icepay.com/api/payments/methods
+     *
+     * @return list<PaymentMethod>
+     * @throws ApiException On any API error response, or a transport failure (Connection).
+     * @throws \JsonException When the response body is not valid JSON.
+     */
     public function getPaymentMethods(): array
     {
         $response = $this->httpClient->get(self::BASE_URL . 'api/payments/methods');
@@ -85,7 +104,7 @@ class CheckoutClient
      * @param class-string<ResponseType> $className
      * @param JsonSerializable|null $payload
      * @return ResponseType
-     * @throws \Exception
+     * @throws ApiException
      * @throws \JsonException
      */
     protected function callCheckoutApi(
@@ -94,7 +113,7 @@ class CheckoutClient
         ?JsonSerializable $payload = null
     ): JsonDeserializable {
         if (!is_subclass_of($className, JsonDeserializable::class)) {
-            throw new \Exception("Class $className is not a subclass of JsonDeserializable");
+            throw new \LogicException("Class $className is not a subclass of JsonDeserializable");
         }
         if ($payload !== null) {
             $response = $this->httpClient->post($url, $payload);
@@ -118,7 +137,7 @@ class CheckoutClient
         $fallbackMessage = $data['message'] ?? $data['title'] ?? "Request failed with status code: $statusCode";
 
         if (!isset($data['type'])) {
-            throw new \Exception($fallbackMessage);
+            throw new ApiException(message: $fallbackMessage, code: $statusCode);
         }
 
         $className = array_reduce(
@@ -134,7 +153,7 @@ class CheckoutClient
                 type: $data['type'],
                 documentation: $data['documentation'] ?? null,
                 errors: $data['errors'] ?? null,
-                trace: $data['trace'] ?? null,
+                serverTrace: $data['trace'] ?? null,
             );
         }
 
@@ -142,6 +161,13 @@ class CheckoutClient
             throw new $className($data['message'] ?? '', $statusCode);
         }
 
-        throw new \Exception($fallbackMessage);
+        throw new ApiException(
+            message: $fallbackMessage,
+            code: $statusCode,
+            type: $data['type'],
+            documentation: $data['documentation'] ?? null,
+            errors: $data['errors'] ?? null,
+            serverTrace: $data['trace'] ?? null,
+        );
     }
 }
